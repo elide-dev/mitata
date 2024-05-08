@@ -63,6 +63,7 @@ try {
 function runtime() {
   if ('Bun' in globalThis) return 'bun';
   if ('Deno' in globalThis) return 'deno';
+  if ('Elide' in globalThis) return 'elide';
   if ('process' in globalThis) return 'node';
   if ('navigator' in globalThis) return 'browser';
 
@@ -76,6 +77,7 @@ function version() {
     node: () => process.version,
     deno: () => Deno.version.deno,
     bun: () => process.versions.bun,
+    elide: () => Elide.version,
   })[runtime()]();
 }
 
@@ -86,6 +88,7 @@ function os() {
     deno: () => Deno.build.target,
     bun: () => `${process.arch}-${process.platform}`,
     node: () => `${process.arch}-${process.platform}`,
+    elide: () => `${process.arch}-${process.platform}`,
   })[runtime()]();
 }
 
@@ -96,6 +99,7 @@ function no_color() {
     deno: () => Deno.noColor,
     bun: () => !!process.env.NO_COLOR,
     node: () => !!process.env.NO_COLOR,
+    elide: () => !!process.env.NO_COLOR,
   })[runtime()]();
 }
 
@@ -104,6 +108,7 @@ async function cpu() {
     unknown: () => 'unknown',
     browser: () => 'unknown',
     node: () => import('os').then(x => x.cpus()[0].model),
+    elide: () => import('os').then(x => x.cpus()[0].model),
 
     bun: async () => {
       try {
