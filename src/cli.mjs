@@ -231,7 +231,7 @@ export async function run(opts = {}) {
     runtime: `${`${runtime()} ${version()}`.trim()} (${os()})`,
   };
 
-  if (!json && !dataStderr) {
+  if (!json || dataStderr) {
     log(kleur.gray(colors, `cpu: ${report.cpu}`));
     log(kleur.gray(colors, `runtime: ${report.runtime}`));
 
