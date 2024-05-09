@@ -223,6 +223,7 @@ export async function run(opts = {}) {
   const colors = opts.colors ??= !no_color();
   const dataStderr = !!opts.data_to_stderr;
   const json = !!opts.json || (0 === opts.json);
+  const doOutput = !silent && (!json || dataStderr)
   opts.size = table.size(benchmarks.map(b => b.name));
 
   const report = {
@@ -231,7 +232,7 @@ export async function run(opts = {}) {
     runtime: `${`${runtime()} ${version()}`.trim()} (${os()})`,
   };
 
-  if (!json || dataStderr) {
+  if (doOutput) {
     log(kleur.gray(colors, `cpu: ${report.cpu}`));
     log(kleur.gray(colors, `runtime: ${report.runtime}`));
 
@@ -250,19 +251,19 @@ export async function run(opts = {}) {
 
       try {
         b.stats = (await measure(b.fn, {})).stats;
-        if (!json) log(table.benchmark(b.name, b.stats, opts));
+        if (doOutput) log(table.benchmark(b.name, b.stats, opts));
       }
 
       catch (err) {
         b.error = { stack: err.stack, message: err.message };
-        if (!json) log(table.benchmark_error(b.name, err, opts));
+        if (doOutput) log(table.benchmark_error(b.name, err, opts));
       }
     }
 
-    if (_b && !json) log('\n' + table.summary(benchmarks.filter(b => null === b.group), opts));
+    if (_b && doOutput) log('\n' + table.summary(benchmarks.filter(b => null === b.group), opts));
 
     for (const group of groups) {
-      if (!json) {
+      if (doOutput) {
         if (_f) log('');
         if (!group.startsWith('$mitata_group')) log(`• ${group}`);
         if (_f || !group.startsWith('$mitata_group')) log(kleur.gray(colors, table.br(opts)));
@@ -274,19 +275,19 @@ export async function run(opts = {}) {
 
         try {
           b.stats = (await measure(b.fn, {})).stats;
-          if (!json) log(table.benchmark(b.name, b.stats, opts));
+          if (doOutput) log(table.benchmark(b.name, b.stats, opts));
         }
 
         catch (err) {
           b.error = { stack: err.stack, message: err.message };
-          if (!json) log(table.benchmark_error(b.name, err, opts));
+          if (doOutput) log(table.benchmark_error(b.name, err, opts));
         }
       }
 
-      if (summaries[group] && !json) log('\n' + table.summary(benchmarks.filter(b => group === b.group), opts));
+      if (summaries[group] && doOutput) log('\n' + table.summary(benchmarks.filter(b => group === b.group), opts));
     }
 
-    if (!json && opts.units) log(table.units(opts));
+    if (doOutput && opts.units) log(table.units(opts));
     if (json) {
       if (dataStderr) {
         process.stderr.write(JSON.stringify(report, null, 'number' !== typeof opts.json ? 0 : opts.json));
