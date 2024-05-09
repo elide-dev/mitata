@@ -221,6 +221,7 @@ export async function run(opts = {}) {
   const silent = opts.silent || false;
   const log = silent ? () => { } : _print;
   const colors = opts.colors ??= !no_color();
+  const dataStderr = !!opts.data_to_stderr;
   const json = !!opts.json || (0 === opts.json);
   opts.size = table.size(benchmarks.map(b => b.name));
 
@@ -230,7 +231,7 @@ export async function run(opts = {}) {
     runtime: `${`${runtime()} ${version()}`.trim()} (${os()})`,
   };
 
-  if (!json) {
+  if (!json && !dataStderr) {
     log(kleur.gray(colors, `cpu: ${report.cpu}`));
     log(kleur.gray(colors, `runtime: ${report.runtime}`));
 
@@ -286,7 +287,13 @@ export async function run(opts = {}) {
     }
 
     if (!json && opts.units) log(table.units(opts));
-    if (json) log(JSON.stringify(report, null, 'number' !== typeof opts.json ? 0 : opts.json));
+    if (json) {
+      if (dataStderr) {
+        process.stderr.write(JSON.stringify(report, null, 'number' !== typeof opts.json ? 0 : opts.json));
+      } else {
+        log(JSON.stringify(report, null, 'number' !== typeof opts.json ? 0 : opts.json));
+      }
+    }
 
     return report;
   }
